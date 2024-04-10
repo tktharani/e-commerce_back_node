@@ -1,6 +1,6 @@
 const express=require("express")
 const app=express();
-// const cors = require('cors');
+const cors = require('cors');
 app.use(express.json())
 const router=express.Router()
 
@@ -17,12 +17,12 @@ mongoose.connect(MONGODB_URL)
         console.error("Error in connecting to mongodb",err.message)
     })
     // external middleware
-    // app.use(cors({
-    //     origin:"*"
-    // }));
-    // // app.use(router)
-    // const productRouter=require("./routes/ProductRoute")
-    // app.use(productRouter)
+    app.use(cors({
+        origin:"*"
+    }));
+    app.use(router)
+    const productRouter=require("./routes/ProductRoute")
+    app.use(productRouter)
 
 app.listen(PORT,()=>{
     console.log(`server listening on ${PORT}....`)
