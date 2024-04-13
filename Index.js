@@ -1,12 +1,14 @@
 const express=require("express")
 const app=express();
 const cors = require('cors');
+
+
 app.use(express.json())
 const router=express.Router()
 
 const mongoose=require("mongoose")
 
-const PORT = process.env.PORT || 6000
+const PORT = process.env.PORT || 5000
 const MONGODB_URL="mongodb://localhost/productdatabase"
 
 mongoose.connect(MONGODB_URL)
@@ -18,11 +20,23 @@ mongoose.connect(MONGODB_URL)
     })
     // external middleware
     app.use(cors({
-        origin:"*"
+        origin:"*",
+        methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
     }));
     app.use(router)
     const productRouter=require("./routes/ProductRoute")
     app.use(productRouter)
+    
+     const userRouter=require("./routes/UserRoute")
+     app.use(userRouter)
+
+
+    
+  
+  
+  
 
 app.listen(PORT,()=>{
     console.log(`server listening on ${PORT}....`)

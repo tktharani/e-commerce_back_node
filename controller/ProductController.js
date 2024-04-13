@@ -1,5 +1,7 @@
 const Product=require("../models/ProductModel")
 
+
+
 exports.list=[(req,res)=>{
     Product.find()
     .then((products)=>{
@@ -15,7 +17,8 @@ exports.insert =[(req,res)=>{
         name:req.body.name,
         description:req.body.description,
         price:req.body.price,
-        image:req.body.image
+        image:req.body.image,
+        category:req.body.category,
 
     })
     product.save()
@@ -41,3 +44,22 @@ exports.delete=(req,res)=>{
     })
 
 }
+
+exports.update = [(req,res)=>{
+    
+    Product.updateOne(
+        {_id:req.params.id},
+        {$set:{
+            name:req.body.name,
+            description:req.body.description,
+            price:req.body.price,
+            image:req.body.image,
+        }}
+    )
+    .then((product)=>{
+        return res.status(200).send(product)
+    })
+    .catch((err)=>{
+        return res.status(200).send(err.message)
+    })
+}]
