@@ -14,10 +14,25 @@ exports.list=[(req,res)=>{
 exports.insert=[
     body("username").isLength({min:1}).withMessage("UserName cannot be empty"),
     body("email").isEmail().withMessage("Invalid Email format"),
-    body("password").isLength({min:6}).withMessage("password must be alteast 6 character"),
-    body("fullName").isAlpha().withMessage("name is only letters"),
-    body('role').isIn(['admin', 'user']).withMessage('Role must be either admin or user'),
-
+    body("password").isLength({min:3}).withMessage("password must be alteast 6 character"),
+    body("fullName").isAlpha().withMessage("FullName is only letters"),
+    // body('role').isIn(['admin', 'user']).withMessage('Role must be either admin or user'),
+    body("email").custom((value)=>{
+        return User.findOne({email :value})
+        .then((user)=>{
+            if(user) {
+                return Promise.reject("Email already exists");
+            }
+        })
+    }),
+    body("username").custom((value)=>{
+        return User.findOne({username :value})
+        .then((user)=>{
+            if(user) {
+                return Promise.reject("username already exists");
+            }
+        })
+    }),
    
     
     (req,res)=>{
