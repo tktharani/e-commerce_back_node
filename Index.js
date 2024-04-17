@@ -22,9 +22,12 @@ mongoose.connect(MONGODB_URL)
     app.use(cors({
         origin:"*",
         methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-    preflightContinue: false,
-    optionsSuccessStatus: 204,
+        preflightContinue: false,
+        optionsSuccessStatus: 204,
     }));
+
+    app.use("/public",express.static(__dirname+"/public"))
+
     app.use(router)
     const productRouter=require("./routes/ProductRoute")
     app.use(productRouter)
