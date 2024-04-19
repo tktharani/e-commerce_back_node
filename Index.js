@@ -3,6 +3,7 @@ const app=express();
 const cors = require('cors');
 
 
+
 app.use(express.json())
 const router=express.Router()
 
@@ -28,6 +29,11 @@ mongoose.connect(MONGODB_URL)
 
     app.use("/public",express.static(__dirname+"/public"))
 
+    // Example route to serve the images
+    app.get('/images/:filename', (req, res) => {
+    const filename = req.params.filename;
+    res.sendFile(path.join(__dirname, 'public', 'data', 'uploads', filename));
+  });
     app.use(router)
     const productRouter=require("./routes/ProductRoute")
     app.use(productRouter)
@@ -35,11 +41,7 @@ mongoose.connect(MONGODB_URL)
      const userRouter=require("./routes/UserRoute")
      app.use(userRouter)
 
-
-    
-  
-  
-  
+    // app.use(require("./controller/UserController"))
 
 app.listen(PORT,()=>{
     console.log(`server listening on ${PORT}....`)
