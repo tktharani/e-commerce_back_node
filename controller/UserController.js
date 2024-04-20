@@ -35,7 +35,7 @@ exports.loginUser = async (req, res) => {
             return res.status(401).json({ error: 'Authentication failed' });
         }
         // Generate JWT token
-        const token = jwt.sign({ userId: user._id }, '12', { expiresIn: '1h' });
+        const token = jwt.sign({ userId: user._id }, 'my-secret-key', { expiresIn: '1h' });
         res.status(200).json({ token });
     } catch (error) {
         res.status(500).json({ error: 'Login failed' });
@@ -84,16 +84,35 @@ exports.viewUser = async (req, res) => {
 };
 
 // Update a user by ID
+
 exports.update = async (req, res) => {
     try {
-        const userId = req.params.id;
-        const { username, email, password, fullName, role } = req.body;
-        const updatedUser = await User.findByIdAndUpdate(userId, { username, email, password, fullName, role }, { new: true });
-        if (!updatedUser) {
-            return res.status(404).json({ error: 'User not found' });
-        }
-        res.status(200).json(updatedUser);
-    } catch (error) {
-        res.status(500).json({ error: 'Error updating user' });
+      const userId = req.params.id;
+      const { username, email, password, fullName, role } = req.body;
+      if (!username || !email || !password || !fullName || !role) {
+        return res.status(400).json({ error: 'Missing required fields' });
     }
-};
+  
+      // Check if the password field is not empty
+      if (password.trim() !== '') {
+        // Hash the password using bcrypt
+        const hashedPassword = await bcrypt.hash(password, 10); // 10 is the salt rounds
+        // Update the user with the hashed password
+        const updatedUser = await User.findByIdAndUpdate(userId, { username, email, password: hashedPassword, fullName, role }, { new: true });
+        if (!updatedUser) {
+          return res.status(404).json({ error: 'User not found' });
+        }
+        return res.status(200).json(updatedUser);
+      } else {
+        // If password is empty, update user without hashing the password
+        const updatedUser = await User.findByIdAndUpdate(userId, { username, email, fullName, role }, { new: true });
+        if (!updatedUser) {
+          return res.status(404).json({ error: 'User not found' });
+        }
+        return res.status(200).json(updatedUser);
+      }
+    } catch (error) {
+      console.error('Error updating user:', error);
+      res.status(500).json({ error: 'Error updating user' });
+    }
+  };
