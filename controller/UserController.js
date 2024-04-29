@@ -1,4 +1,5 @@
 const User =require("../models/UserModel")
+const Address=require("../models/AddressModel")
 const{body,validationResult} = require("express-validator")
 const bcrypt = require('bcrypt')
 const jwt =require('jsonwebtoken')
@@ -6,7 +7,7 @@ const jwt =require('jsonwebtoken')
 // User registration
 exports.registerUser = async (req, res) => {
     try {
-        const { username, password, email, fullName, role } = req.body;
+        const { username, password, email, fullName, role,addressData } = req.body;
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(400).json({ errors: errors.array() });
@@ -15,6 +16,13 @@ exports.registerUser = async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, 10);
         const user = new User({ username, password: hashedPassword, email, fullName, role });
         await user.save();
+        // Create new address
+            const address = new Address({ ...addressData, user: user._id });
+            await address.save();
+
+            // Associate the address with the user
+            user.address = address._id;
+            await user.save();
 
         res.status(201).json({ message: "User registered successfully" });
     } catch (error) {
@@ -36,7 +44,7 @@ exports.loginUser = async (req, res) => {
         }
         // Generate JWT token
         const token = jwt.sign({ userId: user._id }, 'my-secret-key', { expiresIn: '1h' });
-        res.status(200).json({ token });
+        res.status(200).json({ token,username:user.username });
     } catch (error) {
         res.status(500).json({ error: 'Login failed' });
     }
@@ -46,12 +54,13 @@ exports.loginUser = async (req, res) => {
 // List all users
 exports.list = async (req, res) => {
     try {
-        const users = await User.find();
+        const users = await User.find().populate('address'); // Populate the address field
         res.status(200).json(users);
     } catch (error) {
         res.status(500).json({ error: 'Error fetching users' });
     }
 };
+
 
 
 // Delete a user by ID
@@ -73,7 +82,7 @@ exports.delete = async (req, res) => {
 exports.viewUser = async (req, res) => {
     try {
         const userId = req.params.id;
-        const user = await User.findById(userId);
+        const user = await User.findById(userId).populate('address');
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
@@ -88,31 +97,58 @@ exports.viewUser = async (req, res) => {
 exports.update = async (req, res) => {
     try {
       const userId = req.params.id;
-      const { username, email, password, fullName, role } = req.body;
-      if (!username || !email || !password || !fullName || !role) {
+      const { username, email, password, fullName, role, street, city, state, postalCode, country } = req.body;
+      if (!username || !email || !fullName || !role) {
         return res.status(400).json({ error: 'Missing required fields' });
-    }
+      }
   
       // Check if the password field is not empty
+      let hashedPassword = password;
       if (password.trim() !== '') {
         // Hash the password using bcrypt
-        const hashedPassword = await bcrypt.hash(password, 10); // 10 is the salt rounds
-        // Update the user with the hashed password
-        const updatedUser = await User.findByIdAndUpdate(userId, { username, email, password: hashedPassword, fullName, role }, { new: true });
-        if (!updatedUser) {
-          return res.status(404).json({ error: 'User not found' });
-        }
-        return res.status(200).json(updatedUser);
-      } else {
-        // If password is empty, update user without hashing the password
-        const updatedUser = await User.findByIdAndUpdate(userId, { username, email, fullName, role }, { new: true });
-        if (!updatedUser) {
-          return res.status(404).json({ error: 'User not found' });
-        }
-        return res.status(200).json(updatedUser);
+        hashedPassword = await bcrypt.hash(password, 10);
       }
+  
+      // Update the user with the hashed password and other details
+      const updatedUser = await User.findByIdAndUpdate(
+        userId,
+        { username, email, password: hashedPassword, fullName, role },
+        { new: true }
+      );
+      if (!updatedUser) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+  
+      // Check if address data is provided
+      if (street || city || state || postalCode || country) {
+        // Check if user already has an address
+        if (updatedUser.address) {
+          // Update existing address
+          const updatedAddress = await Address.findByIdAndUpdate(
+            updatedUser.address,
+            { street, city, state, postalCode, country },
+            { new: true }
+          );
+          if (!updatedAddress) {
+            return res.status(404).json({ error: 'Address not found' });
+          }
+        } else {
+          // Create new address and associate it with the user
+          const address = new Address({ street, city, state, postalCode, country, user: userId });
+          const savedAddress = await address.save();
+          if (!savedAddress) {
+            return res.status(500).json({ error: 'Error creating address' });
+          }
+          // Associate the address with the user
+          updatedUser.address = savedAddress._id;
+          await updatedUser.save();
+        }
+      }
+  
+      res.status(200).json(updatedUser);
     } catch (error) {
       console.error('Error updating user:', error);
       res.status(500).json({ error: 'Error updating user' });
     }
   };
+  

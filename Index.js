@@ -5,6 +5,8 @@ const mongoose = require('mongoose');
 const verifyToken = require('./middleware/UserMiddleware'); // Import the middleware
 const productRouter = require('./routes/ProductRoute');
 const userRouter = require('./routes/UserRoute');
+const cartRouter=require('./routes/CartRoute')
+
 const PORT = process.env.PORT || 5000;
 const MONGODB_URL = "mongodb://localhost/productdatabase";
 
@@ -35,6 +37,9 @@ app.get('/images/:filename', (req, res) => {
 });
 app.use(productRouter);
 app.use(userRouter);
+app.use(cartRouter)
+
+
 
 // Protected and Unprotected Routes
 app.use("/unprotected", (req, res) => {

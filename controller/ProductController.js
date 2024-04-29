@@ -72,6 +72,7 @@ exports.delete=(req,res)=>{
     })
 
 }
+ 
 
 // Update route with multer middleware for file upload handling
 exports.update = [

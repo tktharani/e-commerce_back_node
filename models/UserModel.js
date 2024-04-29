@@ -7,6 +7,8 @@ var UserSchema = new Schema({
     password: { type: String, required: true },
     fullName: { type: String },
     role: { type: String, enum: ['user', 'admin'], default: 'user' },
+    address: { type: Schema.Types.ObjectId, ref: 'Address' } // Reference to Address schema
+
 },{timestamps:true});
 
 module.exports = mongoose.model("User",UserSchema)
