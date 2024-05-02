@@ -1,13 +1,36 @@
-const express=require("express")
-const router=express.Router()
-const verifyToken=require("../middleware/UserMiddleware")
+const express = require('express');
+const router = express.Router();
+const CartController = require('../controller/CartController');
+const Cart = require('../models/CartModel');
+const User = require('../models/UserModel');
+const Product = require('../models/ProductModel');
 
-const CartController =require("../controller/CartController")
-router.post("/add-to-cart",verifyToken,CartController.addToCart)//add
-router.put("/update-cart",verifyToken,CartController.updateCart)//update
-router.delete("/remove-from-cart/:id",verifyToken,CartController.removeFromCart)//delete
-router.delete("/clear-cart",verifyToken,CartController.clearCart)
-router.get("/get-cart",verifyToken,CartController.getCart)
+// Add product to cart route
+router.post('/add-to-cart', async (req, res) => {
+  try {
+    const { userId, productId, quantity } = req.body;
+
+    const result = await CartController.addToCart(userId, productId, quantity,{ Cart, User, Product });
+
+    res.status(200).json(result);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error.' });
+  }
+});
 
 
-module.exports = router
+// GET cart details for a user
+router.get('/cart-details/:userId', async (req, res) => {
+    try {
+      const userId = req.params.userId;
+      const cartDetails = await CartController.getCartDetails(userId);
+  
+      res.status(200).json(cartDetails);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Internal server error.' });
+    }
+  });
+
+module.exports = router;

@@ -44,7 +44,7 @@ exports.loginUser = async (req, res) => {
         }
         // Generate JWT token
         const token = jwt.sign({ userId: user._id }, 'my-secret-key', { expiresIn: '1h' });
-        res.status(200).json({ token,username:user.username });
+        res.status(200).json({ token,userId: user._id,username:user.username });
     } catch (error) {
         res.status(500).json({ error: 'Login failed' });
     }
@@ -66,7 +66,7 @@ exports.list = async (req, res) => {
 // Delete a user by ID
 exports.delete = async (req, res) => {
     try {
-        const userId = req.params.id;
+         const userId = req.params.id;
         const deletedUser = await User.findByIdAndDelete(userId);
         if (!deletedUser) {
             return res.status(404).json({ error: 'User not found' });
