@@ -33,4 +33,33 @@ router.get('/cart-details/:userId', async (req, res) => {
     }
   });
 
+  // Update cart item quantity route
+router.put('/update-cart-quantity/:userId/:productId', async (req, res) => {
+  try {
+      const { userId, productId } = req.params;
+      const { quantity } = req.body;
+
+      const result = await CartController.updateCartItemQuantity(userId, productId, quantity);
+
+      res.status(200).json(result);
+  } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Internal server error.' });
+  }
+});
+
+// Remove item from cart route
+router.delete('/remove-from-cart', async (req, res) => {
+  try {
+    const { userId, productId } = req.body;
+
+    const result = await CartController.removeFromCart(userId, productId);
+
+    res.status(200).json(result);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error.' });
+  }
+});
+
 module.exports = router;
