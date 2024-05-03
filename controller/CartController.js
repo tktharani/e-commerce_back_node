@@ -125,7 +125,6 @@ async function updateCartItemQuantity(userId, productId, quantity) {
                 totalCartPrice += product.price * item.quantity;
             }
         }
-
         // Update total price in the cart
         cart.totalPrice = totalCartPrice;
 
@@ -189,6 +188,34 @@ async function removeFromCart(userId, productId) {
 }
 
 
+// Function to clear the cart for a user
+async function clearCart(userId) {
+    try {
+      // Check if userId is undefined or not a valid ObjectId
+      if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
+        throw new Error('Invalid userId.');
+      }
+  
+      // Find and update the cart for the user
+      const cart = await Cart.findOneAndUpdate(
+        { user: userId },
+        { $set: { products: [], totalPrice: 0 } },
+        { new: true }
+      );
+  
+      if (!cart) {
+        throw new Error('Cart not found for this user.');
+      }
+  
+      return { message: 'Cart cleared successfully.', cart };
+    } catch (error) {
+      console.error('Error clearing cart:', error);
+      throw new Error('Error clearing cart.');
+    }
+  }
+  
+
+
 
 
 
@@ -197,4 +224,5 @@ module.exports = {
     getCartDetails,
     updateCartItemQuantity, 
     removeFromCart,
+    clearCart,
 };
