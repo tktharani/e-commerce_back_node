@@ -10,6 +10,7 @@ const validateUserRegistration = [
     body("email").isEmail().withMessage("Invalid email format"),
     body("password").isLength({ min: 3 }).withMessage("Password must be at least 6 characters"),
     body("fullName").isAlpha().withMessage("Full name should only contain letters"),
+    body("phonenumber").isMobilePhone().withMessage("Invalid phone number format"),
 ];
 
 router.get("/user/list",UserController.list)
@@ -18,4 +19,9 @@ router.post('/user/login', UserController.loginUser);
 router.delete('/user/:id',UserController.delete)
 router.get("/user/:id", UserController.viewUser);
 router.put("/user/:id",UserController.update)
+
+// New route to fetch user's address
+router.get("/user/address/:id", UserController.getUserAddress);
+
+
 module.exports = router

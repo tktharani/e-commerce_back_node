@@ -7,14 +7,14 @@ const jwt =require('jsonwebtoken')
 // User registration
 exports.registerUser = async (req, res) => {
     try {
-        const { username, password, email, fullName, role,addressData } = req.body;
+        const { username, password, email, fullName,phonenumber, role,addressData } = req.body;
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(400).json({ errors: errors.array() });
         }
         // Hash password
         const hashedPassword = await bcrypt.hash(password, 10);
-        const user = new User({ username, password: hashedPassword, email, fullName, role });
+        const user = new User({ username, password: hashedPassword, email, fullName, role,phonenumber });
         await user.save();
         // Create new address
             const address = new Address({ ...addressData, user: user._id });
@@ -97,7 +97,7 @@ exports.viewUser = async (req, res) => {
 exports.update = async (req, res) => {
     try {
       const userId = req.params.id;
-      const { username, email, password, fullName, role, street, city, state, postalCode, country } = req.body;
+      const { username, email, password, fullName,phonenumber, role, street, city, state, postalCode, country } = req.body;
       if (!username || !email || !fullName || !role) {
         return res.status(400).json({ error: 'Missing required fields' });
       }
@@ -112,7 +112,7 @@ exports.update = async (req, res) => {
       // Update the user with the hashed password and other details
       const updatedUser = await User.findByIdAndUpdate(
         userId,
-        { username, email, password: hashedPassword, fullName, role },
+        { username, email, password: hashedPassword, fullName, phonenumber,role },
         { new: true }
       );
       if (!updatedUser) {
@@ -152,3 +152,42 @@ exports.update = async (req, res) => {
     }
   };
   
+  // Function to get user's address
+  exports.getUserAddress = async (req, res) => {
+    try {
+        let userId = req.params.id.trim(); // Trim whitespace
+        userId = userId.replace(/\n/g, ''); // Remove newline character
+
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        // Check if the user has an address
+        if (!user.address) {
+            return res.status(404).json({ error: 'Address not found for this user' });
+        }
+
+        // Now you can safely access the address ID
+        const addressId = user.address._id;
+
+        // Fetch the address using the addressId and populate the username and phone number from the user
+        const address = await Address.findById(addressId).populate({
+          path: 'user',
+          select: 'username phonenumber', // Select only username and phonenumber fields
+      });
+        
+        if (!address) {
+            return res.status(404).json({ error: 'Address not found' });
+        }
+
+        // Check if the populated user object has the username property
+        const username = address.user ? address.user.username : 'N/A';
+        const phonenumber = address.user ? address.user.phonenumber : 'N/A';
+        
+        res.status(200).json({ address, username });
+    } catch (error) {
+        console.error('Error fetching user address:', error);
+        res.status(500).json({ error: 'Error fetching user address' });
+    }
+};
