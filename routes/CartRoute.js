@@ -1,9 +1,12 @@
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose'); 
 const CartController = require('../controller/CartController');
 const Cart = require('../models/CartModel');
 const User = require('../models/UserModel');
 const Product = require('../models/ProductModel');
+
+
 
 // Add product to cart route
 router.post('/add-to-cart', async (req, res) => {
@@ -75,8 +78,6 @@ router.delete('/clear-cart/:userId', async (req, res) => {
     res.status(500).json({ message: 'Internal server error.' });
   }
 });
-
-
 
 
 

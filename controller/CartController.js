@@ -88,7 +88,7 @@ async function getCartDetails(userId) {
   }
 
   // Function to update the quantity of a product in the cart
-async function updateCartItemQuantity(userId, productId, quantity) {
+  async function updateCartItemQuantity(userId, productId, quantity) {
     try {
         // Check if userId is undefined or not a valid ObjectId
         if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
@@ -107,15 +107,22 @@ async function updateCartItemQuantity(userId, productId, quantity) {
             throw new Error('Cart not found for this user.');
         }
 
-        // Find the product in the cart
-        const cartProduct = cart.products.find(p => p.product.toString() === productId);
+        // Log input parameters for debugging
+        console.log('Updating cart item quantity:', userId, productId, quantity);
 
-        if (!cartProduct) {
+        // Log the cart before update
+        console.log('Cart before update:', cart);
+
+        // Find the index of the product in the cart
+        const cartProductIndex = cart.products.findIndex(p => p.product.toString() === productId);
+
+        if (cartProductIndex === -1) {
+            console.error('Product not found in the cart:', productId);
             throw new Error('Product not found in the cart.');
         }
 
         // Update the quantity of the product
-        cartProduct.quantity = quantity;
+        cart.products[cartProductIndex].quantity = quantity;
 
         // Calculate total price after updating quantity
         let totalCartPrice = 0;
@@ -125,8 +132,12 @@ async function updateCartItemQuantity(userId, productId, quantity) {
                 totalCartPrice += product.price * item.quantity;
             }
         }
+
         // Update total price in the cart
         cart.totalPrice = totalCartPrice;
+
+        // Log the cart after update
+        console.log('Cart after update:', cart);
 
         // Save the updated cart
         await cart.save();
@@ -137,6 +148,7 @@ async function updateCartItemQuantity(userId, productId, quantity) {
         throw new Error('Error updating cart item quantity.');
     }
 }
+
 
 async function removeFromCart(userId, productId) {
     try {
@@ -213,11 +225,9 @@ async function clearCart(userId) {
       throw new Error('Error clearing cart.');
     }
   }
+
+
   
-
-
-
-
 
 module.exports = {
     addToCart,
@@ -225,4 +235,5 @@ module.exports = {
     updateCartItemQuantity, 
     removeFromCart,
     clearCart,
+    
 };
