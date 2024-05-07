@@ -225,7 +225,51 @@ async function clearCart(userId) {
       throw new Error('Error clearing cart.');
     }
   }
+  const getUserCart = async (req, res) => {
+    try {
+      const userId = req.params.userId;
+      const cart = await Cart.findOne({ user: userId }).populate('products');
+  
+      if (!cart) {
+        return res.status(404).json({ error: 'Cart not found' });
+      }
+  
+      res.status(200).json({ cart });
+    } catch (error) {
+      console.error('Error fetching cart:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  };
 
+
+  const getAllCarts = async (req, res) => {
+    try {
+        // Fetch all carts from the database
+        const carts = await Cart.find().populate('user').populate('products.product');
+
+        if (!carts || carts.length === 0) {
+            return res.status(404).json({ error: 'No carts found' });
+        }
+
+        // Map cart details to include user information
+        const cartDetails = carts.map(cart => ({
+            user: {
+                id: cart.user._id,
+                username: cart.user.username,
+                email: cart.user.email,
+            },
+            products: cart.products,
+            totalPrice: cart.totalPrice,
+        }));
+
+        res.status(200).json({ carts: cartDetails });
+    } catch (error) {
+        console.error('Error fetching carts:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
+
+  
 
   
 
@@ -235,5 +279,7 @@ module.exports = {
     updateCartItemQuantity, 
     removeFromCart,
     clearCart,
+    getUserCart,
+    getAllCarts,
     
 };

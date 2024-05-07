@@ -185,9 +185,38 @@ exports.update = async (req, res) => {
         const username = address.user ? address.user.username : 'N/A';
         const phonenumber = address.user ? address.user.phonenumber : 'N/A';
         
-        res.status(200).json({ address, username });
+        res.status(200).json({ address, username,phonenumber });
     } catch (error) {
         console.error('Error fetching user address:', error);
         res.status(500).json({ error: 'Error fetching user address' });
     }
+};
+
+exports.updateUserAddress = async (req, res) => {
+  try {
+    const userId = req.params.id; // Extract User ID from request parameters
+    const { street, city, state, postalCode, country } = req.body;
+
+    // Check if userId is valid (optional, but recommended)
+    if (!userId) {
+      return res.status(400).json({ error: 'User ID is required' });
+    }
+
+    // Update the user's address
+    const updatedAddress = await Address.findOneAndUpdate(
+      { user: userId },
+      { street, city, state, postalCode, country },
+      { new: true, upsert: true }
+    );
+
+    if (!updatedAddress) {
+      return res.status(404).json({ error: 'User address not found' });
+    }
+
+    // Respond with success message and updated address
+    res.status(200).json({ message: 'Address updated successfully', address: updatedAddress });
+  } catch (error) {
+    console.error('Error updating user address:', error);
+    res.status(500).json({ error: 'Error updating user address' });
+  }
 };

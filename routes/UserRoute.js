@@ -23,5 +23,9 @@ router.put("/user/:id",UserController.update)
 // New route to fetch user's address
 router.get("/user/address/:id", UserController.getUserAddress);
 
+// Update user's address
+router.put('/user/address/:id', UserController.updateUserAddress);
+
+
 
 module.exports = router

@@ -78,6 +78,11 @@ router.delete('/clear-cart/:userId', async (req, res) => {
     res.status(500).json({ message: 'Internal server error.' });
   }
 });
+// Route for fetching all carts
+
+router.get('/carts', CartController.getAllCarts); 
+
+
 
 
 
