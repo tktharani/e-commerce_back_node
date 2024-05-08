@@ -252,15 +252,20 @@ async function clearCart(userId) {
         }
 
         // Map cart details to include user information
-        const cartDetails = carts.map(cart => ({
-            user: {
+        const cartDetails = carts.map(cart => {
+            // Add null check for cart.user
+            const user = cart.user ? {
                 id: cart.user._id,
                 username: cart.user.username,
                 email: cart.user.email,
-            },
-            products: cart.products,
-            totalPrice: cart.totalPrice,
-        }));
+            } : null;
+
+            return {
+                user,
+                products: cart.products,
+                totalPrice: cart.totalPrice,
+            };
+        });
 
         res.status(200).json({ carts: cartDetails });
     } catch (error) {
@@ -268,6 +273,7 @@ async function clearCart(userId) {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 };
+
 
   
 
