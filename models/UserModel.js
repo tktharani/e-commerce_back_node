@@ -11,7 +11,8 @@ var UserSchema = new Schema({
     address: { type: Schema.Types.ObjectId, ref: 'Address' }, // Reference to Address schema
     cart:{type:mongoose.Schema.Types.ObjectId,ref:'Cart'},// Reference to Cart schema
     payments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Payment' }], // Reference to Payment schema
-  
+    wishlist: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product' }] // Add wishlist field
+
 },{timestamps:true});
 
 module.exports = mongoose.model("User",UserSchema)
