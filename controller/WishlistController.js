@@ -60,6 +60,7 @@ exports.removeFromWishlist = async (req, res) => {
         await wishlist.save();
         res.status(200).json({ message: 'Product removed from wishlist', wishlist });
     } catch (error) {
+        console.error('Error removing product from wishlist:', error); // Log the error
         res.status(500).json({ error: 'Error removing product from wishlist' });
     }
 };
